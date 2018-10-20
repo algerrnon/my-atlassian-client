@@ -31,7 +31,7 @@
 	<!--<maxFileSize>100KB</maxFileSize>-->
 	<!--</triggeringPolicy>-->
 	<!--</appender>-->
-	<root level="error">
+	<root level="info">
 		<appender-ref ref="stdout"/>
 		<!--<appender-ref ref="file"/>-->
 	</root>

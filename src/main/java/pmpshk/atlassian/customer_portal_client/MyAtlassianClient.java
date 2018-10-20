@@ -1,0 +1,311 @@
+package pmpshk.atlassian.customer_portal_client;
+
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.net.URL;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+/**
+ *
+ */
+public class MyAtlassianClient
+{
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	
+	private int sleepIntervalInMilliseconds = 5 * 1000;
+	private ChromeDriver driver;
+	
+	public MyAtlassianClient()
+	{
+		File tempChromeDriver = makeChoromeDriverFile();
+		log.info("создали во временном каталоге файл chromedriver");
+		driver = createWebDriver(tempChromeDriver);
+		log.info("создали экземпляр webdriver");
+		
+		Runtime.getRuntime().addShutdownHook(new Thread()
+		{
+			public void run()
+			{
+				log.info("Running Shutdown Hook");
+				if (driver != null)
+				{
+					driver.quit();
+					log.info("рекурсивно удаляем данные из временного каталога содержащего chromedriver");
+					deleteFolderRecursively(tempChromeDriver.getParentFile());
+				}
+				log.info("shutdown hook ended");
+			}
+		});
+	}
+	
+	public static void main(String[] args) throws IOException
+	{
+		String login = "your-login";
+		String password = "your-password";
+		MyAtlassianClient client = new MyAtlassianClient();
+		if (client.loginToGoogleServices(login, password) & client.loginToMyAtlassianWithGoogleCredentials())
+		{
+			for (int i = 0; i < 20; i++)
+			{
+				client.generateNewEvaluationLicense("com.thed.zephyr.je");
+			}
+		}
+		else
+		{
+			log.error("Не удалось залогиниться в Google");
+		}
+		client = null;
+	}
+	
+	private boolean setFileAttributesForChromedriverFile(File chromedriverFile)
+	{
+		try
+		{
+			log.info("начали изменение прав доступа для файла chromedriver");
+			
+			Set<PosixFilePermission> perms = java.nio.file.Files.readAttributes(chromedriverFile.toPath(), PosixFileAttributes
+					.class)
+					.permissions();
+			
+			log.info("file permission before : {}", perms);
+			
+			perms.add(PosixFilePermission.OWNER_WRITE);
+			perms.add(PosixFilePermission.OWNER_READ);
+			perms.add(PosixFilePermission.OWNER_EXECUTE);
+			perms.add(PosixFilePermission.GROUP_WRITE);
+			perms.add(PosixFilePermission.GROUP_READ);
+			perms.add(PosixFilePermission.GROUP_EXECUTE);
+			perms.add(PosixFilePermission.OTHERS_WRITE);
+			perms.add(PosixFilePermission.OTHERS_READ);
+			perms.add(PosixFilePermission.OTHERS_EXECUTE);
+			
+			java.nio.file.Files.setPosixFilePermissions(chromedriverFile.toPath(), perms);
+			log.info("file permission after : {}", perms);
+			perms = null;
+			log.info("закончили изменение прав доступа для файла chromedriver");
+		}
+		catch (IOException ex)
+		{
+			log.error("ошибка изменения прав доступа", ex);
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private File makeChoromeDriverFile()
+	{
+		try
+		{
+			URL chromedriverUrl = Resources.getResource("chromedriver");
+			File tempDir = Files.createTempDir();
+			log.info("создали временный каталог {}", tempDir);
+			
+			File tempChromeDriver = new File(tempDir.getAbsolutePath() + File.separator + "chromedriver");
+			FileUtils.copyURLToFile(chromedriverUrl, tempChromeDriver);
+			log.info("скопировали файл {} во временный каталог {}", tempChromeDriver, tempDir);
+			
+			if (setFileAttributesForChromedriverFile(tempChromeDriver))
+			{
+				tempDir = null;
+				return tempChromeDriver;
+			}
+		}
+		catch (IOException ex)
+		{
+			log.error("Не удалось создать файл", ex);
+		}
+		return null;
+	}
+	
+	private void deleteFolderRecursively(File tempDir)
+	{
+		log.info("удаляем все содержимое папки {}", tempDir);
+		if (tempDir != null && tempDir.exists() && tempDir.isDirectory())
+		{
+			File[] files = tempDir.listFiles();
+			for (File file : files)
+			{
+				if (file.isDirectory())
+				{
+					deleteFolderRecursively(file);
+				}
+				else
+				{
+					file.deleteOnExit();
+				}
+			}
+			
+			tempDir.deleteOnExit();
+		}
+	}
+	
+	private ChromeDriver createWebDriver(File tempChromeDriver)
+	{
+		System.setProperty("webdriver.chrome.driver", tempChromeDriver.toString());
+		
+		ChromeDriver driver = new ChromeDriver(
+				new ChromeOptions()
+						.setAcceptInsecureCerts(true)
+						//.addArguments("--headless") //Runs Chrome in headless mode.
+						//HEADLESS CHROME DOES NOT SUPPORT EXTENSIONS.
+						//see more: https://bugs.chromium.org/p/chromium/issues/detail?id=706008#c5
+						.addArguments("disable-gpu") //Temporarily needed if running on Windows.
+		);
+		log.info("создали экземпляр webdriver");
+		long timeout = 15;
+		driver.manage().timeouts().implicitlyWait(timeout, TimeUnit.SECONDS);
+		log.info("установили таймаут для экземпляра веб-драйвера равным {}", timeout);
+		return driver;
+	}
+	
+	private boolean loginToGoogleServices(final String login, final String password)
+	{
+		try
+		{
+			driver.get("https://accounts.google.com/ServiceLogin");
+			log.info("перешли на страницу авторизации Google");
+			
+			Thread.sleep(sleepIntervalInMilliseconds);
+			driver.getKeyboard().sendKeys(login); //todo удалить учетные данные
+			log.info("ввели логин");
+			
+			Thread.sleep(sleepIntervalInMilliseconds);
+			driver.getKeyboard().sendKeys(Keys.ENTER);
+			log.info("нажали Enter");
+			
+			Thread.sleep(sleepIntervalInMilliseconds);
+			driver.getKeyboard().sendKeys(password); //todo удалить учетные данные
+			log.info("ввели пароль");
+			
+			Thread.sleep(sleepIntervalInMilliseconds);
+			driver.getKeyboard().sendKeys(Keys.ENTER);
+			log.info("нажали Enter");
+			
+			Thread.sleep(sleepIntervalInMilliseconds);
+			log.info("Успешно залогинились в сервисы Google");
+			return true;
+		}
+		catch (InterruptedException ex)
+		{
+			return false;
+		}
+	}
+	
+	private boolean loginToMyAtlassianWithGoogleCredentials()
+	{
+		try
+		{
+			driver.get("http://my.atlassian.com");
+			log.info("перешли в личный кабинет Atlassian: my.atlassian.com");
+			
+			Thread.sleep(sleepIntervalInMilliseconds);
+			WebElement googleSigninButton = driver.findElementById("google-signin-button");
+			log.info("нашли кнопку для входа через сервисы Google");
+			
+			Thread.sleep(sleepIntervalInMilliseconds);
+			googleSigninButton.click();
+			log.info("нажали кнопку входа через сервисы Google");
+			
+			Thread.sleep(sleepIntervalInMilliseconds);
+			WebElement profileIdentifier = driver.findElementById("profileIdentifier");
+			log.info("выбрали Google профиль для входа в my.atlassian.com");
+			
+			Thread.sleep(sleepIntervalInMilliseconds);
+			profileIdentifier.click();
+			log.info("кликаем по профилю гугл, через который мы хотим войти на my.atlassian.com");
+			Thread.sleep(sleepIntervalInMilliseconds);
+			log.info("вошли на сайт my.atlassian.com используя аккаунт Google");
+			return true;
+		}
+		catch (InterruptedException ex)
+		{
+			log.error("ошибка входа в сервис Atlassian через учетные данные Google");
+			return false;
+		}
+	}
+	
+	private String postFormAndExtractLicenseFromResponsePage() throws InterruptedException
+	{
+		Thread.sleep(sleepIntervalInMilliseconds);
+		WebElement organisationName = driver.findElementById("organisation_name");
+		organisationName.sendKeys("My org");
+		log.info("Ввели название организации в форме генерации лицензии");
+		Thread.sleep(sleepIntervalInMilliseconds);
+		WebElement marketplaceTermsConfirm = driver.findElementById("marketplaceTermsConfirm");
+		log.info("установили чекбокс согласия с правилами Atlassian Marketplace");
+		Thread.sleep(sleepIntervalInMilliseconds);
+		marketplaceTermsConfirm.click();
+		Thread.sleep(sleepIntervalInMilliseconds);
+		WebElement generateLicense = driver.findElementById("generate-license");
+		log.info("нашли кнопку для генерации лицензии");
+		Thread.sleep(sleepIntervalInMilliseconds);
+		generateLicense.click();
+		log.info("нажали кнопку для генерации лицензии");
+		Thread.sleep(sleepIntervalInMilliseconds);
+		WebElement licenseKey = driver.findElementById("license-key");
+		log.info("нашли элемент содержащий лицензионный ключ");
+		Thread.sleep(sleepIntervalInMilliseconds);
+		String licenseKeyText = licenseKey.getText();
+		log.info("получили лицензионный ключ");
+		System.out.println(licenseKeyText);
+		Thread.sleep(sleepIntervalInMilliseconds);
+		if (licenseKeyText != null && licenseKeyText.length() > 0)
+		{
+			return licenseKeyText;
+		}
+		else
+		{
+			return "";
+		}
+	}
+	
+	public String generateNewEvaluationLicense(String pluginKey)
+	{
+		String licenseKeyText = null;
+		
+		try
+		{
+			String plugintTryUrl = "https://my.atlassian.com/addon/try/" + pluginKey;
+			driver.get(plugintTryUrl);
+			log.info("переходим на страницу генерации лицензии для плагина {}", plugintTryUrl);
+			Thread.sleep(sleepIntervalInMilliseconds);
+			
+			if (driver.getCurrentUrl().equals("https://my.atlassian.com/addon/error"))
+			{
+				log.error("не удалось сгенерировать лицензию для плагина, произошла ошибка");
+				WebElement errorsElement = driver.findElementByClassName("errors");
+				log.error("Текст ошибки >>{}", errorsElement.getText());
+				log.error("вышли из метода");
+			}
+			else
+			{
+				licenseKeyText = postFormAndExtractLicenseFromResponsePage();
+			}
+		}
+		catch (InterruptedException ex)
+		{
+			log.error("Произошла ошибка!", ex);
+		}
+		catch (Exception ex)
+		{
+			log.error("Произошла ошибка!", ex);
+		}
+		
+		return licenseKeyText;
+	}
+}

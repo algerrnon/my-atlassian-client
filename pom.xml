@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.pampushko.atlassian.upm</groupId>
-	<artifactId>atlassian-upm-rest-api-client</artifactId>
+	<groupId>pmpshk.atlassian.customer-portal-client</groupId>
+	<artifactId>my-atlassian-client</artifactId>
 	<version>0.0.1</version>
 
 	<properties>
@@ -25,7 +25,7 @@
 		<!-- Skips unit tests -->
 		<maven.test.unit.skip>true</maven.test.unit.skip>
 
-		<main.class>com.pampushko.atlassian.upm.Main</main.class>
+		<main.class>pmpshk.atlassian.customer_portal_client.MyAtlassianClient</main.class>
 	</properties>
 
 	<prerequisites>
@@ -48,36 +48,7 @@
 		</dependency>
 		<!-- логирование sl4j конец-->
 
-		<!-- retrofit 2 и сопутствующие зависимости начало -->
-		<dependency>
-			<groupId>com.squareup.retrofit2</groupId>
-			<artifactId>retrofit</artifactId>
-			<version>${retrofit.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.squareup.retrofit2</groupId>
-			<artifactId>converter-gson</artifactId>
-			<version>${retrofit.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.squareup.retrofit2</groupId>
-			<artifactId>adapter-rxjava2</artifactId>
-			<version>${retrofit.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.squareup.okhttp3</groupId>
-			<artifactId>logging-interceptor</artifactId>
-			<version>3.8.0</version>
-		</dependency>
-		<!-- retrofit 2 и сопутствующие зависимости конец -->
-
 		<!-- управление настройками приложения Начало-->
-		<!--<dependency>-->
-		<!--<groupId>com.sabre.oss.conf4j</groupId>-->
-		<!--<artifactId>conf4j</artifactId>-->
-		<!--<version>1.0</version>-->
-		<!--</dependency>-->
 		<!-- управление настройками приложения Конец-->
 
 		<!-- lombook начало -->
@@ -98,10 +69,19 @@
 		<!-- google guava конец -->
 
 		<dependency>
-			<groupId>com.diogonunes</groupId>
-			<artifactId>JCDP</artifactId>
-			<version>2.0.3.1</version>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>3.11.0</version>
 		</dependency>
+
+		<!-- commons io начало -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<!-- commons io конец -->
+
 	</dependencies>
 
 	<build>
@@ -151,27 +131,35 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
-				<configuration>
-					<source>${maven.compiler.source}</source>
-					<target>${maven.compiler.target}</target>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.21.0</version>
-				<configuration>
-					<includes>
-						<include>**/*Test.java</include>
-					</includes>
-				</configuration>
-			</plugin>
+			<!--<plugin>-->
+			<!--<groupId>org.apache.maven.plugins</groupId>-->
+			<!--<artifactId>maven-compiler-plugin</artifactId>-->
+			<!--<version>3.5.1</version>-->
+			<!--<configuration>-->
+			<!--<source>${maven.compiler.source}</source>-->
+			<!--<target>${maven.compiler.target}</target>-->
+			<!--<encoding>UTF-8</encoding>-->
+			<!--</configuration>-->
+			<!--</plugin>-->
+			<!--<plugin>-->
+			<!--<groupId>org.apache.maven.plugins</groupId>-->
+			<!--<artifactId>maven-surefire-plugin</artifactId>-->
+			<!--<version>2.21.0</version>-->
+			<!--<configuration>-->
+			<!--<includes>-->
+			<!--<include>**/*Test.java</include>-->
+			<!--</includes>-->
+			<!--</configuration>-->
+			<!--</plugin>-->
 		</plugins>
 
 	</build>
+	<repositories>
+
+		<repository>
+			<id>google</id>
+			<url>https://maven.google.com</url>
+		</repository>
+
+	</repositories>
 </project>
