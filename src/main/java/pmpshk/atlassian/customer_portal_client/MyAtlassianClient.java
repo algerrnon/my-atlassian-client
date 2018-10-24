@@ -52,25 +52,6 @@ public class MyAtlassianClient
 		});
 	}
 	
-	public static void main(String[] args) throws IOException
-	{
-		String login = "your-login";
-		String password = "your-password";
-		MyAtlassianClient client = new MyAtlassianClient();
-		if (client.loginToGoogleServices(login, password) & client.loginToMyAtlassianWithGoogleCredentials())
-		{
-			for (int i = 0; i < 20; i++)
-			{
-				client.generateNewEvaluationLicense("com.thed.zephyr.je");
-			}
-		}
-		else
-		{
-			log.error("Не удалось залогиниться в Google");
-		}
-		client = null;
-	}
-	
 	private boolean setFileAttributesForChromedriverFile(File chromedriverFile)
 	{
 		try
@@ -161,7 +142,7 @@ public class MyAtlassianClient
 		ChromeDriver driver = new ChromeDriver(
 				new ChromeOptions()
 						.setAcceptInsecureCerts(true)
-						//.addArguments("--headless") //Runs Chrome in headless mode.
+						.addArguments("--headless") //Runs Chrome in headless mode.
 						//HEADLESS CHROME DOES NOT SUPPORT EXTENSIONS.
 						//see more: https://bugs.chromium.org/p/chromium/issues/detail?id=706008#c5
 						.addArguments("disable-gpu") //Temporarily needed if running on Windows.
@@ -173,7 +154,7 @@ public class MyAtlassianClient
 		return driver;
 	}
 	
-	private boolean loginToGoogleServices(final String login, final String password)
+	public boolean loginToGoogleServices(final String login, final String password)
 	{
 		try
 		{
@@ -206,7 +187,7 @@ public class MyAtlassianClient
 		}
 	}
 	
-	private boolean loginToMyAtlassianWithGoogleCredentials()
+	public boolean loginToMyAtlassianWithGoogleCredentials()
 	{
 		try
 		{
