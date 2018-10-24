@@ -4,6 +4,7 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -161,7 +162,7 @@ public class MyAtlassianClient
 		ChromeDriver driver = new ChromeDriver(
 				new ChromeOptions()
 						.setAcceptInsecureCerts(true)
-						.addArguments("--headless") //Runs Chrome in headless mode.
+						//.addArguments("--headless") //Runs Chrome in headless mode.
 						//HEADLESS CHROME DOES NOT SUPPORT EXTENSIONS.
 						//see more: https://bugs.chromium.org/p/chromium/issues/detail?id=706008#c5
 						.addArguments("disable-gpu") //Temporarily needed if running on Windows.
@@ -197,8 +198,16 @@ public class MyAtlassianClient
 			log.info("нажали Enter");
 			
 			Thread.sleep(sleepIntervalInMilliseconds);
-			log.info("Успешно залогинились в сервисы Google");
-			return true;
+			if (driver.getCurrentUrl().equals("https://myaccount.google.com/?pli=1"))
+			{
+				log.info("Успешно залогинились в сервисы Google");
+				return true;
+			}
+			else
+			{
+				log.error("по всей видимости не удалось залогиниться в сервисы Google, не произошло перенаправления ожидаемый URL");
+				return false;
+			}
 		}
 		catch (InterruptedException ex)
 		{
@@ -222,12 +231,31 @@ public class MyAtlassianClient
 			log.info("нажали кнопку входа через сервисы Google");
 			
 			Thread.sleep(sleepIntervalInMilliseconds);
-			WebElement profileIdentifier = driver.findElementById("profileIdentifier");
-			log.info("выбрали Google профиль для входа в my.atlassian.com");
 			
+			WebElement profileIdentifier = null;
+			try
+			{
+				profileIdentifier = driver.findElementById("profileIdentifier");
+			}
+			catch (NoSuchElementException ex)
+			{
+				log.error("Не удалось найти нужный профиль, возможно ваши учетные данные ошибочны", ex);
+				return false;
+			}
+			log.info("выбрали Google профиль для входа в my.atlassian.com");
 			Thread.sleep(sleepIntervalInMilliseconds);
-			profileIdentifier.click();
-			log.info("кликаем по профилю гугл, через который мы хотим войти на my.atlassian.com");
+			
+			if (profileIdentifier != null)
+			{
+				profileIdentifier.click();
+				log.info("кликаем по профилю гугл, через который мы хотим войти на my.atlassian.com");
+			}
+			else
+			{
+				log.error("Не удалось выбрать профиль пользователя сервисов Google, по причине отсутствия");
+				return false;
+			}
+			
 			Thread.sleep(sleepIntervalInMilliseconds);
 			log.info("вошли на сайт my.atlassian.com используя аккаунт Google");
 			return true;

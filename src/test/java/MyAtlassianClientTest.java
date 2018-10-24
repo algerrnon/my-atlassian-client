@@ -19,11 +19,14 @@ public class MyAtlassianClientTest
 		try
 		{
 			MyAtlassianClient client = new MyAtlassianClient();
-			if (client.loginToGoogleServices(login, password) & client.loginToMyAtlassianWithGoogleCredentials())
+			if (client.loginToGoogleServices(login, password))
 			{
-				for (int i = 0; i < 20; i++)
+				if (client.loginToMyAtlassianWithGoogleCredentials())
 				{
-					client.generateNewEvaluationLicense("com.thed.zephyr.je");
+					for (int i = 0; i < 20; i++)
+					{
+						client.generateNewEvaluationLicense("com.thed.zephyr.je");
+					}
 				}
 			}
 			else
