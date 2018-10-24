@@ -16,18 +16,26 @@ public class MyAtlassianClientTest
 	{
 		String login = "testme@gmail.com";
 		String password = "your-password";
-		MyAtlassianClient client = new MyAtlassianClient();
-		if (client.loginToGoogleServices(login, password) & client.loginToMyAtlassianWithGoogleCredentials())
+		try
 		{
-			for (int i = 0; i < 20; i++)
+			MyAtlassianClient client = new MyAtlassianClient();
+			if (client.loginToGoogleServices(login, password) & client.loginToMyAtlassianWithGoogleCredentials())
 			{
-				client.generateNewEvaluationLicense("com.thed.zephyr.je");
+				for (int i = 0; i < 20; i++)
+				{
+					client.generateNewEvaluationLicense("com.thed.zephyr.je");
+				}
 			}
+			else
+			{
+				log.error("Не удалось залогиниться в Google");
+			}
+			client = null;
 		}
-		else
+		catch (Exception ex)
 		{
-			log.error("Не удалось залогиниться в Google");
+			log.error("данная OS не поддерживается", ex);
+			return;
 		}
-		client = null;
 	}
 }

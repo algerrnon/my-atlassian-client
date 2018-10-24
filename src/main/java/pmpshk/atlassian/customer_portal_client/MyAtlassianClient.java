@@ -29,9 +29,9 @@ public class MyAtlassianClient
 	private int sleepIntervalInMilliseconds = 5 * 1000;
 	private ChromeDriver driver;
 	
-	public MyAtlassianClient()
+	public MyAtlassianClient() throws Exception
 	{
-		File tempChromeDriver = makeChoromeDriverFile();
+		File tempChromeDriver = makeChromeDriverFile();
 		log.info("создали во временном каталоге файл chromedriver");
 		driver = createWebDriver(tempChromeDriver);
 		log.info("создали экземпляр webdriver");
@@ -88,11 +88,30 @@ public class MyAtlassianClient
 		return true;
 	}
 	
-	private File makeChoromeDriverFile()
+	private File makeChromeDriverFile() throws Exception
 	{
 		try
 		{
-			URL chromedriverUrl = Resources.getResource("chromedriver");
+			URL chromedriverUrl = null;
+			String platform = Os.platform();
+			String driveFileName;
+			
+			if (platform.equals("win32"))
+			{
+				driveFileName = "chromedriver.exe";
+			}
+			else if (platform.equals("linux"))
+			{
+				driveFileName = "chromedriver";
+			}
+			else
+			{
+				log.error("Unsupported OS");
+				throw new Exception();
+			}
+			
+			chromedriverUrl = Resources.getResource(driveFileName);
+			
 			File tempDir = Files.createTempDir();
 			log.info("создали временный каталог {}", tempDir);
 			
