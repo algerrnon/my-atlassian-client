@@ -162,7 +162,7 @@ public class MyAtlassianClient
 		ChromeDriver driver = new ChromeDriver(
 				new ChromeOptions()
 						.setAcceptInsecureCerts(true)
-						//.addArguments("--headless") //Runs Chrome in headless mode.
+						.addArguments("--headless") //Runs Chrome in headless mode.
 						//HEADLESS CHROME DOES NOT SUPPORT EXTENSIONS.
 						//see more: https://bugs.chromium.org/p/chromium/issues/detail?id=706008#c5
 						.addArguments("disable-gpu") //Temporarily needed if running on Windows.

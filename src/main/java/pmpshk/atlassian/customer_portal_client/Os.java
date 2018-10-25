@@ -9,7 +9,7 @@ import java.lang.invoke.MethodHandles;
 /**
  * O/S functions
  */
-public class Os
+class Os
 {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	
@@ -20,12 +20,12 @@ public class Os
 	
 	}
 	
-	public static String getOsName()
+	static String getOsName()
 	{
 		return System.getProperty("os.name", "unknown");
 	}
 	
-	public static String platform()
+	static String platform()
 	{
 		String osName = System.getProperty("os.name", "generic").toLowerCase();
 		if (osName.startsWith("windows"))
@@ -48,17 +48,17 @@ public class Os
 			return "generic";
 	}
 	
-	public static boolean isWindows()
+	static boolean isWindows()
 	{
 		return (getOsName().toLowerCase().indexOf("windows") >= 0);
 	}
 	
-	public static boolean isLinux()
+	static boolean isLinux()
 	{
 		return getOsName().toLowerCase().indexOf("linux") >= 0;
 	}
 	
-	public static boolean isUnix()
+	static boolean isUnix()
 	{
 		final String os = getOsName().toLowerCase();
 		
@@ -76,19 +76,19 @@ public class Os
 		return false;
 	}
 	
-	public static boolean isMac()
+	static boolean isMac()
 	{
 		final String os = getOsName().toLowerCase();
 		return os.startsWith("mac") || os.startsWith("darwin");
 	}
 	
-	public static boolean isSolaris()
+	static boolean isSolaris()
 	{
 		final String os = getOsName().toLowerCase();
 		return os.indexOf("sunos") >= 0;
 	}
 	
-	public static String findWindowsSystemRoot()
+	static String findWindowsSystemRoot()
 	{
 		if (!isWindows())
 		{
