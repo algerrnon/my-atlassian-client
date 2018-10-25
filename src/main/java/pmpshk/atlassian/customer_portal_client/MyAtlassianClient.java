@@ -27,7 +27,7 @@ public class MyAtlassianClient
 {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	
-	private int sleepIntervalInMilliseconds = 5 * 1000;
+	private int sleepIntervalInSeconds = 5;
 	private ChromeDriver driver;
 	
 	public MyAtlassianClient() throws Exception
@@ -181,23 +181,23 @@ public class MyAtlassianClient
 			driver.get("https://accounts.google.com/ServiceLogin");
 			log.info("перешли на страницу авторизации Google");
 			
-			Thread.sleep(sleepIntervalInMilliseconds);
+			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			driver.getKeyboard().sendKeys(login); //todo удалить учетные данные
 			log.info("ввели логин");
 			
-			Thread.sleep(sleepIntervalInMilliseconds);
+			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			driver.getKeyboard().sendKeys(Keys.ENTER);
 			log.info("нажали Enter");
 			
-			Thread.sleep(sleepIntervalInMilliseconds);
+			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			driver.getKeyboard().sendKeys(password); //todo удалить учетные данные
 			log.info("ввели пароль");
 			
-			Thread.sleep(sleepIntervalInMilliseconds);
+			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			driver.getKeyboard().sendKeys(Keys.ENTER);
 			log.info("нажали Enter");
 			
-			Thread.sleep(sleepIntervalInMilliseconds);
+			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			if (driver.getCurrentUrl().equals("https://myaccount.google.com/?pli=1"))
 			{
 				log.info("Успешно залогинились в сервисы Google");
@@ -222,15 +222,15 @@ public class MyAtlassianClient
 			driver.get("http://my.atlassian.com");
 			log.info("перешли в личный кабинет Atlassian: my.atlassian.com");
 			
-			Thread.sleep(sleepIntervalInMilliseconds);
+			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			WebElement googleSigninButton = driver.findElementById("google-signin-button");
 			log.info("нашли кнопку для входа через сервисы Google");
 			
-			Thread.sleep(sleepIntervalInMilliseconds);
+			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			googleSigninButton.click();
 			log.info("нажали кнопку входа через сервисы Google");
 			
-			Thread.sleep(sleepIntervalInMilliseconds);
+			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			
 			WebElement profileIdentifier = null;
 			try
@@ -243,7 +243,7 @@ public class MyAtlassianClient
 				return false;
 			}
 			log.info("выбрали Google профиль для входа в my.atlassian.com");
-			Thread.sleep(sleepIntervalInMilliseconds);
+			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			
 			if (profileIdentifier != null)
 			{
@@ -256,7 +256,7 @@ public class MyAtlassianClient
 				return false;
 			}
 			
-			Thread.sleep(sleepIntervalInMilliseconds);
+			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			log.info("вошли на сайт my.atlassian.com используя аккаунт Google");
 			return true;
 		}
@@ -269,29 +269,29 @@ public class MyAtlassianClient
 	
 	private String postFormAndExtractLicenseFromResponsePage() throws InterruptedException
 	{
-		Thread.sleep(sleepIntervalInMilliseconds);
+		TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 		WebElement organisationName = driver.findElementById("organisation_name");
 		organisationName.sendKeys("My org");
 		log.info("Ввели название организации в форме генерации лицензии");
-		Thread.sleep(sleepIntervalInMilliseconds);
+		TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 		WebElement marketplaceTermsConfirm = driver.findElementById("marketplaceTermsConfirm");
 		log.info("установили чекбокс согласия с правилами Atlassian Marketplace");
-		Thread.sleep(sleepIntervalInMilliseconds);
+		TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 		marketplaceTermsConfirm.click();
-		Thread.sleep(sleepIntervalInMilliseconds);
+		TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 		WebElement generateLicense = driver.findElementById("generate-license");
 		log.info("нашли кнопку для генерации лицензии");
-		Thread.sleep(sleepIntervalInMilliseconds);
+		TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 		generateLicense.click();
 		log.info("нажали кнопку для генерации лицензии");
-		Thread.sleep(sleepIntervalInMilliseconds);
+		TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 		WebElement licenseKey = driver.findElementById("license-key");
 		log.info("нашли элемент содержащий лицензионный ключ");
-		Thread.sleep(sleepIntervalInMilliseconds);
+		TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 		String licenseKeyText = licenseKey.getText();
 		log.info("получили лицензионный ключ");
 		System.out.println(licenseKeyText);
-		Thread.sleep(sleepIntervalInMilliseconds);
+		TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 		if (licenseKeyText != null && licenseKeyText.length() > 0)
 		{
 			return licenseKeyText;
@@ -311,7 +311,7 @@ public class MyAtlassianClient
 			String plugintTryUrl = "https://my.atlassian.com/addon/try/" + pluginKey;
 			driver.get(plugintTryUrl);
 			log.info("переходим на страницу генерации лицензии для плагина {}", plugintTryUrl);
-			Thread.sleep(sleepIntervalInMilliseconds);
+			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			
 			if (driver.getCurrentUrl().equals("https://my.atlassian.com/addon/error"))
 			{

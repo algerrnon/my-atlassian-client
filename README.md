@@ -6,24 +6,40 @@
 ## Code Example
   
 ```
+public class MyAtlassianClientTest
+{
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	
 	public static void main(String[] args) throws IOException
 	{
-		String login = "your-login@gmail.com";
+		String login = "testme@gmail.com";
 		String password = "your-password";
-		MyAtlassianClient client = new MyAtlassianClient();
-		if (client.loginToGoogleServices(login, password) & client.loginToMyAtlassianWithGoogleCredentials())
+		try
 		{
-			for (int i = 0; i < 20; i++)
+			MyAtlassianClient client = new MyAtlassianClient();
+			if (client.loginToGoogleServices(login, password))
 			{
-				client.generateNewEvaluationLicense("com.thed.zephyr.je");
+				if (client.loginToMyAtlassianWithGoogleCredentials())
+				{
+					for (int i = 0; i < 20; i++)
+					{
+						client.generateNewEvaluationLicense("com.thed.zephyr.je");
+					}
+				}
 			}
+			else
+			{
+				log.error("Не удалось залогиниться в Google");
+			}
+			client = null;
 		}
-		else
+		catch (Exception ex)
 		{
-			log.error("Не удалось залогиниться в Google");
+			log.error("данная OS не поддерживается", ex);
+			return;
 		}
-		client = null;
 	}
+}
 ```  
 ## Contributors
    
