@@ -53,7 +53,31 @@ public class MyAtlassianClient
 		});
 	}
 	
-	private boolean setFileAttributesForChromedriverFile(File chromedriverFile)
+	private boolean setFileAttributesForChromedriverFileWindows(File chromedriverFile)
+	{
+		try
+		{
+			log.info("начали изменение прав доступа для файла chromedriver");
+			log.info("file permission before : is Execute allow: {}, is Write allow: {}, Is Read allow: {}",
+					chromedriverFile.canExecute(), chromedriverFile.canWrite(), chromedriverFile.canRead());
+			
+			chromedriverFile.setExecutable(true);
+			chromedriverFile.setWritable(true);
+			chromedriverFile.setReadable(true);
+			
+			log.info("file permission after : is Execute allow: {}, is Write allow: {}, Is Read allow: {}",
+					chromedriverFile.canExecute(), chromedriverFile.canWrite(), chromedriverFile.canRead());
+			log.info("закончили изменение прав доступа для файла chromedriver");
+		} catch (UnsupportedOperationException ex)
+		{
+			log.error("ошибка изменения прав доступа", ex);
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private boolean setFileAttributesForChromedriverFileLinux(File chromedriverFile)
 	{
 		try
 		{
@@ -79,8 +103,10 @@ public class MyAtlassianClient
 			log.info("file permission after : {}", perms);
 			perms = null;
 			log.info("закончили изменение прав доступа для файла chromedriver");
-		}
-		catch (IOException ex)
+		} catch (UnsupportedOperationException ex)
+		{
+			log.error("", ex);
+		} catch (IOException ex)
 		{
 			log.error("ошибка изменения прав доступа", ex);
 			return false;
@@ -91,44 +117,51 @@ public class MyAtlassianClient
 	
 	private File makeChromeDriverFile() throws Exception
 	{
-		try
-		{
-			URL chromedriverUrl = null;
 			String platform = Os.platform();
 			String driveFileName;
 			
 			if (platform.equals("win32"))
 			{
 				driveFileName = "chromedriver.exe";
+				File driveFile = copyFileToTempDir(driveFileName);
+				if (setFileAttributesForChromedriverFileWindows(driveFile))
+				{
+					return driveFile;
+				}
 			}
 			else if (platform.equals("linux"))
 			{
 				driveFileName = "chromedriver";
+				File driveFile = copyFileToTempDir(driveFileName);
+				if (setFileAttributesForChromedriverFileLinux(driveFile))
+				{
+					return driveFile;
+				}
 			}
 			else
 			{
 				log.error("Unsupported OS");
 				throw new Exception();
 			}
-			
-			chromedriverUrl = Resources.getResource(driveFileName);
-			
+		
+		return null;
+	}
+	
+	private File copyFileToTempDir(String fileName)
+	{
+		try
+		{
+			URL fileUrl = Resources.getResource(fileName);
 			File tempDir = Files.createTempDir();
 			log.info("создали временный каталог {}", tempDir);
-			
-			File tempChromeDriver = new File(tempDir.getAbsolutePath() + File.separator + "chromedriver");
-			FileUtils.copyURLToFile(chromedriverUrl, tempChromeDriver);
+			File tempChromeDriver = new File(tempDir.getAbsolutePath() + File.separator + fileName);
+			FileUtils.copyURLToFile(fileUrl, tempChromeDriver);
 			log.info("скопировали файл {} во временный каталог {}", tempChromeDriver, tempDir);
-			
-			if (setFileAttributesForChromedriverFile(tempChromeDriver))
-			{
-				tempDir = null;
-				return tempChromeDriver;
-			}
+			return tempChromeDriver;
 		}
 		catch (IOException ex)
 		{
-			log.error("Не удалось создать файл", ex);
+			log.error("не удалось скопировать файл во временный каталог", ex);
 		}
 		return null;
 	}
@@ -144,8 +177,7 @@ public class MyAtlassianClient
 				if (file.isDirectory())
 				{
 					deleteFolderRecursively(file);
-				}
-				else
+				} else
 				{
 					file.deleteOnExit();
 				}
@@ -202,14 +234,12 @@ public class MyAtlassianClient
 			{
 				log.info("Успешно залогинились в сервисы Google");
 				return true;
-			}
-			else
+			} else
 			{
 				log.error("по всей видимости не удалось залогиниться в сервисы Google, не произошло перенаправления ожидаемый URL");
 				return false;
 			}
-		}
-		catch (InterruptedException ex)
+		} catch (InterruptedException ex)
 		{
 			return false;
 		}
@@ -236,8 +266,7 @@ public class MyAtlassianClient
 			try
 			{
 				profileIdentifier = driver.findElementById("profileIdentifier");
-			}
-			catch (NoSuchElementException ex)
+			} catch (NoSuchElementException ex)
 			{
 				log.error("Не удалось найти нужный профиль, возможно ваши учетные данные ошибочны", ex);
 				return false;
@@ -249,8 +278,7 @@ public class MyAtlassianClient
 			{
 				profileIdentifier.click();
 				log.info("кликаем по профилю гугл, через который мы хотим войти на my.atlassian.com");
-			}
-			else
+			} else
 			{
 				log.error("Не удалось выбрать профиль пользователя сервисов Google, по причине отсутствия");
 				return false;
@@ -259,8 +287,7 @@ public class MyAtlassianClient
 			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			log.info("вошли на сайт my.atlassian.com используя аккаунт Google");
 			return true;
-		}
-		catch (InterruptedException ex)
+		} catch (InterruptedException ex)
 		{
 			log.error("ошибка входа в сервис Atlassian через учетные данные Google");
 			return false;
@@ -295,8 +322,7 @@ public class MyAtlassianClient
 		if (licenseKeyText != null && licenseKeyText.length() > 0)
 		{
 			return licenseKeyText;
-		}
-		else
+		} else
 		{
 			return "";
 		}
@@ -319,17 +345,14 @@ public class MyAtlassianClient
 				WebElement errorsElement = driver.findElementByClassName("errors");
 				log.error("Текст ошибки >>{}", errorsElement.getText());
 				log.error("вышли из метода");
-			}
-			else
+			} else
 			{
 				licenseKeyText = postFormAndExtractLicenseFromResponsePage();
 			}
-		}
-		catch (InterruptedException ex)
+		} catch (InterruptedException ex)
 		{
 			log.error("Произошла ошибка!", ex);
-		}
-		catch (Exception ex)
+		} catch (Exception ex)
 		{
 			log.error("Произошла ошибка!", ex);
 		}

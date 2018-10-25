@@ -25,7 +25,7 @@ public class MyAtlassianClientTest
 				{
 					for (int i = 0; i < 20; i++)
 					{
-						client.generateNewEvaluationLicense("com.thed.zephyr.je");
+						client.generateNewEvaluationLicense("com.comalatech.workflow");
 					}
 				}
 			}
