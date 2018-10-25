@@ -42,6 +42,8 @@ public class MyAtlassianClientTest
 }
 ```  
 ## Contributors
+
+Alexander Pampushko
    
 ## License
   
