@@ -1,5 +1,9 @@
 ## Project overview
-  Get JIRA license and JIRA plugins licenses from Atlassian Customer Portal (my.atlassian.com)
+Подключается к порталу my.atlassian.com при помощи webdriver 
+
+и позволяет сгенерировать evaluation license для заданного по уникальному ключу плагина.
+
+Get JIRA license and JIRA plugins licenses from Atlassian Customer Portal (my.atlassian.com)
   
 ## To Do
   
