@@ -249,8 +249,8 @@ public class MyAtlassianClient
 	{
 		try
 		{
-			driver.get("http://my.atlassian.com");
-			log.info("перешли в личный кабинет Atlassian: my.atlassian.com");
+			driver.get("https://my.atlassian.com");
+			log.info("перешли в личный кабинет Atlassian: https://my.atlassian.com");
 			
 			TimeUnit.SECONDS.sleep(sleepIntervalInSeconds);
 			WebElement googleSigninButton = driver.findElementById("google-signin-button");
