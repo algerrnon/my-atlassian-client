@@ -6,6 +6,19 @@
 Get JIRA license and JIRA plugins licenses from Atlassian Customer Portal (my.atlassian.com)
   
 ## To Do
+...
+  
+## Запуск
+
+Для проверки запустите MyAtlassianClientTest.
+
+При необхомости визуально проверить работу можно отключить опцию
+
+```
+.addArguments("--headless") //Runs Chrome in headless mode.
+```
+
+в настройках ChromeDriver в классе MyAtlassianClient
   
 ## Code Example
   
